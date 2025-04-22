@@ -26,10 +26,17 @@ const Navbar = () => {
     <nav className="bg-white border-b border-gray-200 py-3 px-4 shadow-sm sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <Link to="/">
+          <Link to="/" className="flex items-center gap-2">
             <img src="/logo-b.svg" alt="СГЦУ архив" className="h-8" />
+            <div className="flex items-center gap-2">
+              <img 
+                src="https://cdn.poehali.dev/files/70c62a2e-eac7-4f0e-977a-836bf35e9d62.png" 
+                alt="Кит СГЦУ" 
+                className="h-8 w-8 object-contain"
+              />
+              <h1 className="text-xl font-bold text-archive-darkBlue">СГЦУ архив</h1>
+            </div>
           </Link>
-          <h1 className="text-xl font-bold text-archive-darkBlue">СГЦУ архив</h1>
         </div>
 
         {/* Десктопное меню */}
