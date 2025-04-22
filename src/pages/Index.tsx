@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import FeatureCard from "@/components/FeatureCard";
@@ -9,11 +11,53 @@ import {
   Clock, 
   FileText 
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import LoginForm from "@/components/LoginForm";
 
 const Index = () => {
+  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Функция для проверки авторизации пользователя
+  // В реальном приложении здесь будет проверка токена или сессии
+  const isUserLoggedIn = () => {
+    // Для демонстрации проверяем по наличию данных в localStorage
+    return localStorage.getItem('isLoggedIn') === 'true';
+  };
+
+  const handleStartWorkClick = () => {
+    if (isUserLoggedIn()) {
+      // Если пользователь авторизован, перенаправляем в облачное хранилище
+      navigate('/cloud');
+    } else {
+      // Если не авторизован, показываем диалог входа
+      setIsLoginDialogOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      
+      {/* Диалог входа */}
+      <Dialog open={isLoginDialogOpen} onOpenChange={setIsLoginDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">Вход в систему СГЦУ архив</DialogTitle>
+          </DialogHeader>
+          <LoginForm 
+            onLoginSuccess={() => {
+              setIsLoginDialogOpen(false);
+              navigate('/cloud');
+            }}
+          />
+        </DialogContent>
+      </Dialog>
       
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-archive-blue/90 to-archive-darkBlue py-20 text-white">
@@ -24,7 +68,11 @@ const Index = () => {
               Современная система для хранения, управления и быстрого поиска важной документации
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-white text-archive-darkBlue hover:bg-blue-50">
+              <Button 
+                size="lg" 
+                className="bg-white text-archive-darkBlue hover:bg-blue-50"
+                onClick={handleStartWorkClick}
+              >
                 Начать работу
               </Button>
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
@@ -107,7 +155,11 @@ const Index = () => {
           <p className="mb-8 max-w-2xl mx-auto">
             Присоединяйтесь к организациям, которые уже оптимизировали свою работу с документами
           </p>
-          <Button size="lg" className="bg-archive-blue hover:bg-archive-blue/90 text-white">
+          <Button 
+            size="lg" 
+            className="bg-archive-blue hover:bg-archive-blue/90 text-white"
+            onClick={handleStartWorkClick}
+          >
             Создать аккаунт
           </Button>
         </div>
@@ -120,7 +172,14 @@ const Index = () => {
             <div className="mb-4 md:mb-0">
               <div className="flex items-center gap-2">
                 <img src="/logo-b.svg" alt="СГЦУ архив" className="h-6" />
-                <span className="font-semibold text-archive-darkBlue">СГЦУ архив</span>
+                <div className="flex items-center gap-2">
+                  <img 
+                    src="https://cdn.poehali.dev/files/70c62a2e-eac7-4f0e-977a-836bf35e9d62.png" 
+                    alt="Кит СГЦУ" 
+                    className="h-6 w-6 object-contain" 
+                  />
+                  <span className="font-semibold text-archive-darkBlue">СГЦУ архив</span>
+                </div>
               </div>
               <p className="text-sm text-archive-gray mt-2">© 2024 Все права защищены</p>
             </div>
