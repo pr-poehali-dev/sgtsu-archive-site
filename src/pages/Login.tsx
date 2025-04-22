@@ -1,14 +1,12 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/components/ui/use-toast";
 import {
   Form,
   FormControl,
@@ -17,45 +15,67 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import LoginForm from "@/components/LoginForm";
 
-const formSchema = z.object({
+// Схема только для email - шаг первый входа
+const emailSchema = z.object({
   email: z.string().email({
     message: "Пожалуйста, введите корректный email адрес",
   }),
-  password: z.string().min(1, {
-    message: "Пароль не может быть пустым",
-  }),
-  rememberMe: z.boolean().default(false),
 });
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(true);
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
   
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof emailSchema>>({
+    resolver: zodResolver(emailSchema),
     defaultValues: {
       email: "",
-      password: "",
-      rememberMe: false,
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const checkEmail = async (values: z.infer<typeof emailSchema>) => {
     setIsLoading(true);
     
-    // Имитация процесса входа
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setIsLoading(false);
-    
-    toast({
-      title: "Вход выполнен успешно!",
-      description: "Добро пожаловать в СГЦУ архив.",
-    });
+    try {
+      // В реальном приложении здесь будет запрос к серверу для проверки существования email
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Симуляция проверки email
+      // В реальном приложении это будет ответ от сервера
+      const emailExists = true; // Предположим, что email существует
+      
+      if (emailExists) {
+        setUserEmail(values.email);
+        setCheckingEmail(false);
+      } else {
+        toast({
+          title: "Email не найден",
+          description: "Пользователь с таким email не зарегистрирован",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось проверить email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  const handleLoginSuccess = () => {
     navigate("/cloud");
+  };
+
+  const handleBackToEmail = () => {
+    setCheckingEmail(true);
   };
 
   return (
@@ -67,76 +87,49 @@ const Login = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl text-archive-darkBlue">Вход в систему</CardTitle>
             <CardDescription>
-              Войдите в ваш аккаунт СГЦУ архива
+              {checkingEmail 
+                ? "Введите email для входа в СГЦУ архив" 
+                : `Вход для пользователя ${userEmail}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="example@mail.ru" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Пароль</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="********" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="flex items-center justify-between">
+            {checkingEmail ? (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(checkEmail)} className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="rememberMe"
+                    name="email"
                     render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Checkbox 
-                            checked={field.value} 
-                            onCheckedChange={field.onChange}
-                          />
+                          <Input type="email" placeholder="example@mail.ru" {...field} />
                         </FormControl>
-                        <FormLabel className="text-sm font-normal">Запомнить меня</FormLabel>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
                   
-                  <Link to="/forgot-password" className="text-sm text-archive-blue hover:underline">
-                    Забыли пароль?
-                  </Link>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Проверка..." : "Продолжить"}
+                  </Button>
+                </form>
+              </Form>
+            ) : (
+              <div className="space-y-4">
+                <LoginForm onLoginSuccess={handleLoginSuccess} />
+                <div className="text-center">
+                  <Button 
+                    variant="link" 
+                    onClick={handleBackToEmail}
+                    className="text-archive-gray text-sm p-0"
+                  >
+                    Войти с другим email
+                  </Button>
                 </div>
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Вход..." : "Войти"}
-                </Button>
-              </form>
-            </Form>
+              </div>
+            )}
           </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-archive-gray">
-              Нет аккаунта?{" "}
-              <Link to="/register" className="text-archive-blue hover:underline">
-                Зарегистрироваться
-              </Link>
-            </p>
-          </CardFooter>
         </Card>
       </div>
     </div>
